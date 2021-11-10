@@ -10,7 +10,11 @@ CLIENT_ID = 888
 
 
 def main():
-    logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.INFO,
+        format="%(asctime)s:%(levelname)s:%(module)s: %(message)s",
+    )
     trader = Trader(IB_GATEWAY_HOST, IB_GATEWAY_PORT, CLIENT_ID)
     trader.start()
 
