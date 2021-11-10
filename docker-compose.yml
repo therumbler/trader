@@ -22,6 +22,8 @@ services:
       - IB_GATEWAY_PORT=4001
     networks:
       - main
+    depends_on:
+      - ib-gateway
 
 networks:
   main:
