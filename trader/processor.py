@@ -38,7 +38,7 @@ class Processor:
 
     def create_timeframes(self):
         seconds = 2
-        for i in range(100):
+        for i in range(30):
             self.timeframes.append(Timeframe(seconds=seconds))
             seconds = int(seconds * math.exp(1))
 
