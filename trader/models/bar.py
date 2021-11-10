@@ -17,18 +17,29 @@ class Bar:
     h: float = 0.0
     l: float = 99999999999999999999
     c: float = 0.0
-    timestamp: int = field(default_factory=time.time)
+    first_tick: int = field(default_factory=time.time)
+    closed: bool = False
 
     def tick(self, price: float) -> None:
         """
         Update the bar with a new tick.
         """
-        if time.time() - self.timestamp > self.seconds:
-            logger.info("time expired")
-            return
+        if self.should_close():
+            return None
         self.c = price
 
         if price > self.h:
             self.h = price
         if price < self.l:
             self.l = price
+        return self
+
+    def should_close(self) -> bool:
+        """
+        Check if the bar should be closed.
+        """
+        if time.time() - self.first_tick > self.seconds:
+            logger.info("time expired for %d", self.seconds)
+            self.closed = True
+            return True
+        return False

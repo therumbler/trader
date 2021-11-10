@@ -18,7 +18,8 @@ class IBApi(EWrapper, EClient):
         self.reqMarketDataType = market_data_type
 
     def tickPrice(self, reqId, tickType, price, attrib):
-        self.tick_processor.process_tick(reqId, tickType, price, attrib)
+        timestamp = time.time()
+        self.tick_processor.process_tick(reqId, tickType, price, attrib, timestamp)
 
 
 class Trader:

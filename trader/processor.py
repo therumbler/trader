@@ -1,15 +1,20 @@
 import logging
-from .models.bar import Bar
+import time
+from threading import Thread
+from .models.timeframe import Timeframe
 
 logger = logging.getLogger(__name__)
 
 
 class Processor:
     def __init__(self, seconds):
-        self.bars = []
+        self.timeframes = []
         self.seconds = seconds
+        self.create_timeframes()
+        self.start_checked_thread()
 
-    def process_tick(self, req_id, tick_type, price, attrib):
+    def process_tick(self, req_id, tick_type, price, attrib, timestamp):
+        self.last_tick = timestamp
         logger.info(
             "process_tick: req_id: %s tick_type: %s price: %s attrib: %s",
             req_id,
@@ -20,17 +25,34 @@ class Processor:
         if tick_type == 2:
             # ask
             pass
-        self._tick(price)
-        logger.info("processor = %r", self)
 
-    def _tick(self, price):
-        logger.info("_tick processing %s", price)
-        if len(self.bars) == 0:
-            self.bars.append(Bar(seconds=self.seconds, o=price))
-        resp = self.bars[-1].tick(price)
-        if not resp:
-            self.bars.append(Bar(seconds=self.seconds, o=price))
-            self.bars[-1].tick(price)
+        for timeframe in self.timeframes:
+            timeframe.tick(price, timestamp)
+        logger.info(
+            "processed %d timeframes in %d seconds",
+            len(self.timeframes),
+            time.time() - self.last_tick,
+        )
 
-    def __repr__(self):
-        return "Processor(seconds={}, bars={})".format(self.seconds, self.bars)
+    def create_timeframes(self):
+        seconds = 2
+        for i in range(100):
+            self.timeframes.append(Timeframe(seconds=seconds))
+            seconds += 2
+
+    def _bar_checker(self):
+        """check whether bars need to be created"""
+        while True:
+            logger.info("processor._bar_checker")
+            try:
+                # map(lambda t: t.bar_checker(), self.timeframes)
+                for t in self.timeframes:
+                    t.bar_checker()
+            except Exception as ex:
+                logger.exception(ex)
+            time.sleep(1)
+
+    def start_checked_thread(self):
+        """start thread to check for new bars"""
+        self.bar_checker_thread = Thread(target=self._bar_checker)
+        self.bar_checker_thread.start()
