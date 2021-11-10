@@ -27,6 +27,8 @@ class Bar:
         if self.should_close():
             return None
         self.c = price
+        if not self.o:
+            self.o = price
 
         if price > self.h:
             self.h = price
@@ -39,7 +41,7 @@ class Bar:
         Check if the bar should be closed.
         """
         if time.time() - self.first_tick > self.seconds:
-            logger.info("time expired for %d", self.seconds)
+            # logger.info("time expired for %d", self.seconds)
             self.closed = True
             return True
         return False

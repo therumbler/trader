@@ -1,4 +1,5 @@
 import logging
+import math
 import time
 from threading import Thread
 from .models.timeframe import Timeframe
@@ -11,6 +12,7 @@ class Processor:
         self.timeframes = []
         self.seconds = seconds
         self.create_timeframes()
+        self.last_tick = None
         self.start_checked_thread()
 
     def process_tick(self, req_id, tick_type, price, attrib, timestamp):
@@ -38,19 +40,21 @@ class Processor:
         seconds = 2
         for i in range(100):
             self.timeframes.append(Timeframe(seconds=seconds))
-            seconds += 2
+            seconds = int(seconds * math.exp(1))
 
     def _bar_checker(self):
         """check whether bars need to be created"""
         while True:
-            logger.info("processor._bar_checker")
+            time.sleep(1)
+            if not self.last_tick:
+                continue
             try:
-                # map(lambda t: t.bar_checker(), self.timeframes)
                 for t in self.timeframes:
                     t.bar_checker()
             except Exception as ex:
                 logger.exception(ex)
-            time.sleep(1)
+
+        logger.error("bar_checker exited")
 
     def start_checked_thread(self):
         """start thread to check for new bars"""
