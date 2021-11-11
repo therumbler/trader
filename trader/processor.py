@@ -37,10 +37,14 @@ class Processor:
         )
 
     def create_timeframes(self):
-        seconds = 2
-        for i in range(30):
+        seconds = 1
+        for i in range(120):
             self.timeframes.append(Timeframe(seconds=seconds))
-            seconds = int(seconds * math.exp(1))
+            new_seconds = int(seconds * 1.06)
+            if new_seconds == seconds:
+                seconds = new_seconds + 1
+            else:
+                seconds = new_seconds
 
     def _bar_checker(self):
         """check whether bars need to be created"""
