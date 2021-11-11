@@ -33,7 +33,7 @@ class Processor:
         logger.info(
             "processed %d timeframes in %d seconds",
             len(self.timeframes),
-            time.time() - self.last_tick,
+            time.time() - timestamp,
         )
 
     def create_timeframes(self):
