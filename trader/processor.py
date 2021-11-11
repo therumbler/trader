@@ -1,17 +1,14 @@
 import logging
-import math
 import time
 from threading import Thread
-from .models.timeframe import Timeframe
+from .models.ticker import Ticker
 
 logger = logging.getLogger(__name__)
 
 
 class Processor:
-    def __init__(self, seconds):
-        self.timeframes = []
-        self.seconds = seconds
-        self.create_timeframes()
+    def __init__(self):
+        self.tickers = {}
         self.last_tick = None
         self.start_checked_thread()
 
@@ -28,23 +25,16 @@ class Processor:
             # ask
             pass
 
-        for timeframe in self.timeframes:
-            timeframe.tick(price, timestamp)
+        self.tickers[req_id].tick(price, timestamp)
+
         logger.info(
-            "processed %d timeframes in %d seconds",
-            len(self.timeframes),
+            "processed %d tickers in %d seconds",
+            len(self.tickers),
             time.time() - timestamp,
         )
 
-    def create_timeframes(self):
-        seconds = 1
-        for i in range(120):
-            self.timeframes.append(Timeframe(seconds=seconds))
-            new_seconds = int(seconds * 1.06)
-            if new_seconds == seconds:
-                seconds = new_seconds + 1
-            else:
-                seconds = new_seconds
+    def add_ticker(self, ticker: Ticker) -> None:
+        self.tickers[ticker.req_id] = ticker
 
     def _bar_checker(self):
         """check whether bars need to be created"""
@@ -53,7 +43,7 @@ class Processor:
             if not self.last_tick:
                 continue
             try:
-                for t in self.timeframes:
+                for _, t in self.tickers.items():
                     t.bar_checker()
             except Exception as ex:
                 logger.exception(ex)

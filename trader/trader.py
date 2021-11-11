@@ -23,11 +23,14 @@ class IBApi(EWrapper, EClient):
 
 
 class Trader:
-    def __init__(self, ib_gateway_host, ib_gateway_port, client_id, tick_processor):
+    def __init__(
+        self, ib_gateway_host, ib_gateway_port, client_id, tick_processor, tickers
+    ):
         self.api = IBApi(market_data_type=3, tick_processor=tick_processor)
         self.ib_gateway_host = ib_gateway_host
         self.ib_gateway_port = ib_gateway_port
         self.client_id = client_id
+        self.tickers = tickers
 
     @staticmethod
     def create_contract(symbol, sec_type, exchange, currency, prim_exch=None):
@@ -52,13 +55,21 @@ class Trader:
 
         time.sleep(1)  # Sleep interval to allow time for connection to server
         logger.info("requesting some data...")
-        self.request_market_data(
-            request_id=1,
-            symbol="EUR",
-            sec_type="CASH",
-            exchange="IDEALPRO",
-            currency="USD",
-        )
+        for ticker in self.tickers:
+            self.request_market_data(
+                request_id=ticker.req_id,
+                symbol=ticker.symbol,
+                sec_type=ticker.sec_type,
+                exchange=ticker.exchange,
+                currency=ticker.currency,
+            )
+        # self.request_market_data(
+        #     request_id=1,
+        #     symbol="EUR",
+        #     sec_type="CASH",
+        #     exchange="IDEALPRO",
+        #     currency="USD",
+        # )
         # self.request_market_data(
         #     request_id=2,
         #     symbol="AAPL",

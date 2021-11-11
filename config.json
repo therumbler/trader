@@ -1,0 +1,36 @@
+{
+    "tickers": [
+        {
+            "sec_type": "STK",
+            "symbol": "AAPL",
+            "exchange": "SMART",
+            "currency": "USD"
+        },
+        {
+            "symbol": "EUR",
+            "sec_type": "CASH",
+            "exchange": "IDEALPRO",
+            "currency": "USD"
+        },
+        {
+            "symbol": "SPY",
+            "currency": "USD",
+            "sec_type": "STK",
+            "exchange": "SMART"
+        },
+        {
+            "ticker_id": 4,
+            "symbol": "ES",
+            "currency": "USD",
+            "sec_type": "STK",
+            "exchange": "CME"
+        },
+        {
+            "symbol": "HSI",
+            "currency": "HK",
+            "sec_type": "STK",
+            "exchange": "HSFE",
+            "enabled": false
+        }
+    ]
+}
