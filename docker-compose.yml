@@ -1,6 +1,12 @@
 version: "3.9"
 
 services:
+  kafka:
+    image: lensesio/fast-data-dev
+    restart: unless-stopped
+    networks:
+      - main
+
   ib-gateway:
     image: waytrade/ib-gateway:1010
     restart: unless-stopped
