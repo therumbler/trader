@@ -1,36 +1,29 @@
-from ibapi.client import EClient
-from ibapi.wrapper import EWrapper
+
 from ibapi.contract import Contract
 
-import os
-import threading
-import time
-
 import logging
+import random
+import time
+import threading
+
+from .ibapi import IBApi
+from .processor import Processor
+
 
 logger = logging.getLogger(__name__)
 
 
-class IBApi(EWrapper, EClient):
-    def __init__(self, tick_processor, market_data_type=1):
-        EClient.__init__(self, self)
-        self.tick_processor = tick_processor
-        self.reqMarketDataType = market_data_type
-
-    def tickPrice(self, reqId, tickType, price, attrib):
-        timestamp = time.time()
-        self.tick_processor.process_tick(reqId, tickType, price, attrib, timestamp)
-
-
 class Trader:
     def __init__(
-        self, ib_gateway_host, ib_gateway_port, client_id, tick_processor, tickers
+        self, ib_gateway_host, ib_gateway_port, client_id, tick_processor, tickers, real=True
     ):
-        self.api = IBApi(market_data_type=3, tick_processor=tick_processor)
+        self.tick_processor: Processor = tick_processor
+        self.api = IBApi(market_data_type=3, tick_processor=self.tick_processor)
         self.ib_gateway_host = ib_gateway_host
         self.ib_gateway_port = ib_gateway_port
         self.client_id = client_id
         self.tickers = tickers
+        self.real = real
 
     @staticmethod
     def create_contract(symbol, sec_type, exchange, currency, prim_exch=None):
@@ -45,15 +38,40 @@ class Trader:
 
         return contract
 
-    def start(self):
-        """ Start the socket in a thread"""
+
+    def _fake_things(self):
+        timestamp = 1000
+        counter = 0
+        while True:
+            price = random.uniform(1.4, 1.5)
+            self.tick_processor.process_tick(1, 2, price, {}, timestamp)
+            counter += 1
+            if counter == 5:
+                counter = 0
+                timestamp += 1
+                time.sleep(0.1)
+
+    def _start_real(self):
         logger.info("waiting 10 seconds before connecting...")
         time.sleep(10)
         self.api.connect(self.ib_gateway_host, self.ib_gateway_port, self.client_id)
-        api_thread = threading.Thread(target=self.api.run, daemon=True)
-        api_thread.start()
+        thread = threading.Thread(target=self.api.run, daemon=True)
+        thread.start()
+        return thread
 
-        time.sleep(1)  # Sleep interval to allow time for connection to server
+    def _start_fake(self):
+        thread = threading.Thread(target=self._fake_things, daemon=True)
+        thread.start()
+        return thread
+
+    def start(self):
+        """ Start the socket in a thread"""
+        if self.real:
+            thread = self._start_real()
+            time.sleep(1) 
+        else:
+            thread = self._start_fake()
+         # Sleep interval to allow time for connection to server
         logger.info("requesting some data...")
         for ticker in self.tickers:
             self.request_market_data(
@@ -63,21 +81,8 @@ class Trader:
                 exchange=ticker.exchange,
                 currency=ticker.currency,
             )
-        # self.request_market_data(
-        #     request_id=1,
-        #     symbol="EUR",
-        #     sec_type="CASH",
-        #     exchange="IDEALPRO",
-        #     currency="USD",
-        # )
-        # self.request_market_data(
-        #     request_id=2,
-        #     symbol="AAPL",
-        #     sec_type="STK",
-        #     exchange="SMART",
-        #     currency="USD",
-        # )
-        api_thread.join()
+        
+        thread.join()
 
     def request_market_data(
         self, request_id, symbol, sec_type, exchange, currency, prim_exch=None

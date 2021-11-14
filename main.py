@@ -50,6 +50,7 @@ def main():
         CLIENT_ID,
         tick_processor=tick_processor,
         tickers=tickers,
+        real=False
     )
     try:
         trader.start()

@@ -21,13 +21,13 @@ class Ticker:
 
     def tick(self, price, timestamp):
         self.last_tick = timestamp
-
+        start = time.time()
         for timeframe in self.timeframes:
             timeframe.tick(price, timestamp)
         logger.info(
             "processed %d timeframes in %d seconds",
             len(self.timeframes),
-            time.time() - timestamp,
+            time.time() - start,
         )
 
     def create_timeframes(self):

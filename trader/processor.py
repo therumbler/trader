@@ -14,6 +14,7 @@ class Processor:
 
     def process_tick(self, req_id, tick_type, price, attrib, timestamp):
         self.last_tick = timestamp
+        start_time = time.time()
         logger.info(
             "process_tick: req_id: %s tick_type: %s price: %s attrib: %s",
             req_id,
@@ -30,7 +31,7 @@ class Processor:
         logger.info(
             "processed %d tickers in %d seconds",
             len(self.tickers),
-            time.time() - timestamp,
+            time.time() - start_time,
         )
 
     def add_ticker(self, ticker: Ticker) -> None:
